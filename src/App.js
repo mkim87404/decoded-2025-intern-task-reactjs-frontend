@@ -1,23 +1,22 @@
-import logo from './logo.svg';
-import './App.css';
+// import './App.css';
+import React, { useState } from 'react';
+import axios from 'axios';
 
 function App() {
+  const [description, setDescription] = useState('');
+  const [output, setOutput] = useState(null);
+
+  const handleSubmit = async () => {
+    const res = await axios.post('https://mkim-decoded-intern-2025.onrender.com/extract', { description }); // Shorthand for { description: value }
+    setOutput(res.data);
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+      <h1>Mini App Builder</h1>
+      <textarea onChange={e => setDescription(e.target.value)} />
+      <button onClick={handleSubmit}>Submit</button>
+      {output && <pre>{JSON.stringify(output, null, 2)}</pre>}
     </div>
   );
 }
