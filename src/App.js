@@ -8,7 +8,7 @@ function App() {
 
   const handleSubmit = async () => {
     const res = await axios.post('https://mkim-decoded-intern-2025.onrender.com/extract', { description }); // Shorthand for { description: value }
-    setOutput(res.data);
+    setOutput(res.data);  // res.data will already be a parsed JSON object as long as that's what the backend sent
   };
 
   return (
