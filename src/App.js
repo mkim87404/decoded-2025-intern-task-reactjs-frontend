@@ -246,7 +246,7 @@ function App() {
             backgroundColor: '#fff',
             padding: '20px',
             'padding-left': '40px',    // Widen the Modal
-            'padding-right': '40px'
+            'padding-right': '40px',
             width: 'auto',  // content-driven width
             maxWidth: '80%',  // prevents overflow
             maxHeight: '80%',
