@@ -205,7 +205,12 @@ function App() {
             boxShadow: '0 0 10px rgba(0,0,0,0.3)'
           }}>
             <h3>Requirements JSON</h3>
-            <pre style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word' }}>
+            <pre style={{
+              whiteSpace: 'pre',         // preserves line breaks, disables wrapping
+              overflowX: 'auto',         // enables horizontal scroll
+              fontFamily: 'monospace',   // consistent character spacing
+              fontSize: '14px',          // optional: adjust for readability
+            }}>
               {JSON.stringify(output, null, 2)}
             </pre>
             <button onClick={() => setShowJsonModal(false)} style={{ marginTop: '10px' }}>
