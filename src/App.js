@@ -12,11 +12,14 @@ function App() {
   const [selectedRoleIndex, setSelectedRoleIndex] = useState(0);
   const [selectedEntityIndex, setSelectedEntityIndex] = useState(0);
 
+  const [formValues, setFormValues] = useState({});
+
   const handleSubmit = async () => {
     // Purge previous run outputs - This is mainly to hide the main output components while loading
     setOutput(null);
     setRequirements(null);
     setShowJsonModal(false);
+    setFormValues({});
 
     setIsLoading(true); // Start loading
     try {
@@ -70,6 +73,8 @@ function App() {
   const getFeatureByEntity = (role, entity) => {
     return role.Features.find((f) => f.Entity === entity);
   };
+
+  const getFieldKey = (role, entity, field) => `${role}|${entity}|${field}`;
 
   // Simpler Display of JSON App Output from AI
   // return (
@@ -194,7 +199,21 @@ function App() {
                         {feature['Input Fields'].map((field, i) => (
                           <div key={i}>
                             <label>{field}</label>
-                            <input type="text" style={{ width: '100%', padding: '6px' }} />
+                            {/* Non-Tracked Input Fields Sharing Values */}
+                            {/* <input type="text" style={{ width: '100%', padding: '6px' }} /> */}
+                            {/* Tracked Input Fields with Unique Values */}
+                            <input
+                              type="text"
+                              style={{ width: '100%', padding: '6px' }}
+                              value={formValues[getFieldKey(role.Role, entity, field)] || ''}
+                              onChange={(e) => {
+                                const key = getFieldKey(role.Role, entity, field);
+                                setFormValues((prev) => ({
+                                  ...prev,
+                                  [key]: e.target.value
+                                }));
+                              }}
+                            />
                           </div>
                         ))}
                       </div>
@@ -226,6 +245,7 @@ function App() {
           <div style={{
             backgroundColor: '#fff',
             padding: '20px',
+            minWidth: '50%',
             maxWidth: '80%',
             maxHeight: '80%',
             overflowY: 'auto',
