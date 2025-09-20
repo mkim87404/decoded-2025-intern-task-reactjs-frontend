@@ -13,6 +13,11 @@ function App() {
   const [selectedEntityIndex, setSelectedEntityIndex] = useState(0);
 
   const handleSubmit = async () => {
+    // Purge previous run outputs - This is mainly to hide the main output components while loading
+    setOutput(null);
+    setRequirements(null);
+    setShowJsonModal(false);
+
     setIsLoading(true); // Start loading
     try {
       const res = await axios.post('https://mkim-decoded-intern-2025.onrender.com/extract', { description }); // Shorthand for { description: value }
