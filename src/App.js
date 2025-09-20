@@ -258,6 +258,8 @@ function App() {
               overflowX: 'auto',         // enables horizontal scroll
               fontFamily: 'monospace',   // consistent character spacing
               fontSize: '14px',          // optional: adjust for readability
+              'padding-left': '20px',    // Widen the Modal
+              'padding-right': '20px'
             }}>
               {JSON.stringify(output, null, 2)}
             </pre>
