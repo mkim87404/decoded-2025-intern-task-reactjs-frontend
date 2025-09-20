@@ -245,8 +245,8 @@ function App() {
           <div style={{
             backgroundColor: '#fff',
             padding: '20px',
-            minWidth: '50%',
-            maxWidth: '80%',
+            width: 'auto',  // content-driven width
+            maxWidth: '80%',  // prevents overflow
             maxHeight: '80%',
             overflowY: 'auto',
             borderRadius: '8px',
