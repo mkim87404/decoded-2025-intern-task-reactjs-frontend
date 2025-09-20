@@ -6,12 +6,14 @@ function App() {
   const [description, setDescription] = useState('');
   const [output, setOutput] = useState(null);
   const [requirements, setRequirements] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
   const [showJsonModal, setShowJsonModal] = useState(false);
 
   const [selectedRoleIndex, setSelectedRoleIndex] = useState(0);
   const [selectedEntityIndex, setSelectedEntityIndex] = useState(0);
 
   const handleSubmit = async () => {
+    setIsLoading(true); // Start loading
     try {
       const res = await axios.post('https://mkim-decoded-intern-2025.onrender.com/extract', { description }); // Shorthand for { description: value }
       const data = res.data;  // res.data will already be a parsed JSON object as long as that's what the backend sent
@@ -32,6 +34,8 @@ function App() {
         });
       });
 
+      setIsLoading(false); // Stop loading before setting requirements, which will start rendering the main results
+
       setRequirements({
         appName: data['App Name'],
         roles: [...rolesSet],
@@ -40,6 +44,8 @@ function App() {
       });
     } catch (err) {
       console.error('Error fetching AI response:', err);
+    } finally {
+      setIsLoading(false); // Stop loading  // TODO: Maybe put only in the "catch" clause, don't need finally here?
     }
   };
 
@@ -82,6 +88,15 @@ function App() {
       />
       <button onClick={handleSubmit}>Submit</button>
 
+      {/* Output Loading Wheel */}
+      {isLoading && (
+        <div style={{ marginTop: '20px', textAlign: 'center' }}>
+          <div className="spinner" />
+          <p>Generating your app...</p>
+        </div>
+      )}
+
+      {/* Main Outputs */}
       {output && requirements && (
         <>
           {/* Requirements Heading */}
