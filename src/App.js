@@ -86,7 +86,15 @@ function App() {
         onChange={(e) => setDescription(e.target.value)}
         placeholder="Describe your app..."
       />
-      <button onClick={handleSubmit}>Submit</button>
+      <button onClick={handleSubmit} disabled={isLoading} style={{
+        backgroundColor: isLoading ? '#ccc' : '#007bff',
+        color: '#fff',
+        border: 'none',
+        padding: '10px 16px',
+        cursor: isLoading ? 'not-allowed' : 'pointer'
+      }}>
+        {isLoading ? 'Generating...' : 'Submit'}
+      </button>
 
       {/* Output Loading Wheel */}
       {isLoading && (
