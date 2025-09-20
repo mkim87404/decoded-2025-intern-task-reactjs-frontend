@@ -244,31 +244,27 @@ function App() {
         }}>
           <div style={{
             backgroundColor: '#fff',
+            padding: '20px',
             width: 'auto',  // content-driven width
             maxWidth: '80%',  // prevents overflow
             maxHeight: '80%',
             overflowY: 'auto',
             borderRadius: '8px',
-            boxShadow: '0 0 10px rgba(0,0,0,0.3)'
+            boxShadow: '0 0 10px rgba(0,0,0,0.3)',
+            boxSizing: 'border-box' // Prevent auto width + padding shrinking inner content and introducing horizontal scroll bar
           }}>
-            <div style={{
-              margin: '20px',
-              'margin-left': '42px',    // Widen the Modal
-              'margin-right': '42px'
+            <h3>Requirements JSON</h3>
+            <pre style={{
+              whiteSpace: 'pre',         // preserves line breaks, disables wrapping
+              overflowX: 'auto',         // enables horizontal scroll
+              fontFamily: 'monospace',   // consistent character spacing
+              fontSize: '14px',          // optional: adjust for readability
             }}>
-              <h3>Requirements JSON</h3>
-              <pre style={{
-                whiteSpace: 'pre',         // preserves line breaks, disables wrapping
-                overflowX: 'auto',         // enables horizontal scroll
-                fontFamily: 'monospace',   // consistent character spacing
-                fontSize: '14px',          // optional: adjust for readability
-              }}>
-                {JSON.stringify(output, null, 2)}
-              </pre>
-              <button onClick={() => setShowJsonModal(false)} style={{ marginTop: '10px' }}>
-                Close
-              </button>
-            </div>
+              {JSON.stringify(output, null, 2)}
+            </pre>
+            <button onClick={() => setShowJsonModal(false)} style={{ marginTop: '10px' }}>
+              Close
+            </button>
           </div>
         </div>
       )}
