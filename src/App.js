@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 
 function App() {
+  const descriptionRef = useRef();
   const [description, setDescription] = useState('');
   const [output, setOutput] = useState(null);
   const [requirements, setRequirements] = useState(null);
@@ -14,21 +15,41 @@ function App() {
 
   const [formValues, setFormValues] = useState({});
 
+  const [showError, setShowError] = useState(false);
+
   const handleSubmit = async () => {
-    // Purge previous run outputs - This is mainly to hide the main output components while loading
+    // Purge previous submit outputs - This is mainly to hide the main output components while loading
     setOutput(null);
     setRequirements(null);
     setShowJsonModal(false);
+    setSelectedRoleIndex(0);
+    setSelectedEntityIndex(0);
     setFormValues({});
+    setShowError(false);
 
-    setIsLoading(true); // Start loading
+    // Capture the current text area input & and do minimal validation of acceptable user input for the app description
+    const userInput = descriptionRef.current.value
+    if (typeof userInput !== 'string' || userInput.trim() === '') {
+      alert('Please enter a valid description.');
+      return;
+    }
+
+    // Disable the Submit button & Show the loading wheel
+    setIsLoading(true);
+
+    // Store the captured app description and begin processing
+    setDescription(userInput);
+
     try {
-      const res = await axios.post('https://mkim-decoded-intern-2025.onrender.com/extract', { description }); // Shorthand for { description: value }
+      const res = await axios.post('https://mkim-decoded-intern-2025.onrender.com/extract', { description }); // shorthand for { description: value }
+      
+      if (res.status !== 200) {
+        setShowError(true);
+        return;
+      }
+      
       const data = res.data;  // res.data will already be a parsed JSON object as long as that's what the backend sent
-
-      setOutput(data);
-      setSelectedRoleIndex(0);
-      setSelectedEntityIndex(0);
+      setOutput(data);  // this update is not immediate in React
 
       const rolesSet = new Set();
       const entitiesSet = new Set();
@@ -42,18 +63,19 @@ function App() {
         });
       });
 
-      setIsLoading(false); // Stop loading before setting requirements, which will start rendering the main results
+      setIsLoading(false); // Hide loading wheel before setting requirements, which will start rendering the main results
 
       setRequirements({
         appName: data['App Name'],
         roles: [...rolesSet],
         entities: [...entitiesSet],
         features: [...featuresSet],
-      });
+      }); // This will kick off the dynamic rendering of the main mock ui component section
     } catch (err) {
       console.error('Error fetching AI response:', err);
+      setShowError(true);
     } finally {
-      setIsLoading(false); // Stop loading  // TODO: Maybe put only in the "catch" clause, don't need finally here?
+      setIsLoading(false); // Hide loading wheel  // this will always run, even before the "try" clause "return"s.
     }
   };
 
@@ -89,13 +111,21 @@ function App() {
   // Dynamic Mock UI Generation for the App
   return (
     <div style={{ padding: '20px', fontFamily: 'Arial' }}>
-      <h1>Mini App Builder</h1>
+      <h1>Mock App Builder</h1>
       <textarea
+        ref={descriptionRef}
+        rows={4}
+        style={{ width: '100%', marginBottom: '10px' }}
+        placeholder="Describe your app..."
+      />
+      {/* Alternatively, update the description state on every keystroke
+      <textarea
+        ref={descriptionRef}
         rows={4}
         style={{ width: '100%', marginBottom: '10px' }}
         onChange={(e) => setDescription(e.target.value)}
         placeholder="Describe your app..."
-      />
+      /> */}
       <button onClick={handleSubmit} disabled={isLoading} style={{
         backgroundColor: isLoading ? '#ccc' : '#007bff',
         color: '#fff',
@@ -105,6 +135,11 @@ function App() {
       }}>
         {isLoading ? 'Generating...' : 'Submit'}
       </button>
+      {showError && (
+        <div style={{ color: 'red', marginTop: '10px' }}>
+          Please try again.
+        </div>
+      )}
 
       {/* Output Loading Wheel */}
       {isLoading && (
@@ -244,14 +279,12 @@ function App() {
         }}>
           <div style={{
             backgroundColor: '#fff',
-            padding: '20px',
             width: 'auto',  // content-driven width
             maxWidth: '80%',  // prevents overflow
             maxHeight: '80%',
             overflowY: 'auto',
             borderRadius: '8px',
-            boxShadow: '0 0 10px rgba(0,0,0,0.3)',
-            boxSizing: 'border-box' // Prevent auto width + padding shrinking inner content and introducing horizontal scroll bar
+            boxShadow: '0 0 10px rgba(0,0,0,0.3)'
           }}>
             <h3>Requirements JSON</h3>
             <pre style={{
