@@ -5,6 +5,7 @@ import axios from 'axios';
 function App() {
   const descriptionRef = useRef();
   const [description, setDescription] = useState('');
+  const [isSubmitButtonDisabled, setIsSubmitButtonDisabled] = useState(false);
   const [output, setOutput] = useState(null);
   const [requirements, setRequirements] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -18,6 +19,16 @@ function App() {
   const [showError, setShowError] = useState(false);
 
   const handleSubmit = async () => {
+    // Capture the current text area input & and do minimal validation of acceptable user input for the app description
+    const userInput = descriptionRef.current.value
+    if (typeof userInput !== 'string' || userInput.trim() === '') {
+      alert('Please enter a valid description.');
+      return;
+    }
+
+    // Disable the Submit button
+    setIsSubmitButtonDisabled(true);
+
     // Purge previous submit outputs - This is mainly to hide the main output components while loading
     setOutput(null);
     setRequirements(null);
@@ -27,14 +38,7 @@ function App() {
     setFormValues({});
     setShowError(false);
 
-    // Capture the current text area input & and do minimal validation of acceptable user input for the app description
-    const userInput = descriptionRef.current.value
-    if (typeof userInput !== 'string' || userInput.trim() === '') {
-      alert('Please enter a valid description.');
-      return;
-    }
-
-    // Disable the Submit button & Show the loading wheel
+    // Show the loading wheel
     setIsLoading(true);
 
     // Store the captured app description and begin processing
@@ -74,8 +78,9 @@ function App() {
     } catch (err) {
       console.error('Error fetching AI response:', err);
       setShowError(true);
-    } finally {
-      setIsLoading(false); // Hide loading wheel  // this will always run, even before the "try" clause "return"s.
+    } finally { // this will always run at the end, even before the "try" clause "return"s
+      setIsLoading(false); // Hide loading wheel  
+      setIsSubmitButtonDisabled(false);  // Enable the Submit button
     }
   };
 
@@ -126,18 +131,18 @@ function App() {
         onChange={(e) => setDescription(e.target.value)}
         placeholder="Describe your app..."
       /> */}
-      <button onClick={handleSubmit} disabled={isLoading} style={{
-        backgroundColor: isLoading ? '#ccc' : '#007bff',
+      <button onClick={handleSubmit} disabled={isSubmitButtonDisabled} style={{
+        backgroundColor: isSubmitButtonDisabled ? '#ccc' : '#007bff',
         color: '#fff',
         border: 'none',
         padding: '10px 16px',
-        cursor: isLoading ? 'not-allowed' : 'pointer'
+        cursor: isSubmitButtonDisabled ? 'not-allowed' : 'pointer'
       }}>
-        {isLoading ? 'Generating...' : 'Submit'}
+        {isSubmitButtonDisabled ? 'Generating...' : 'Submit'}
       </button>
       {showError && (
         <div style={{ color: 'red', marginTop: '10px' }}>
-          Please try again.
+          Please try again, the AI might be temporarily unavailable.
         </div>
       )}
 
