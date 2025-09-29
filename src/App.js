@@ -42,10 +42,10 @@ function App() {
     setIsLoading(true);
 
     // Store the captured app description and begin processing
-    setDescription(userInput);
+    setDescription(userInput);  // Not actively used in the current version, but good to persist this data for future features
 
     try {
-      const res = await axios.post('https://mkim-decoded-intern-2025.onrender.com/extract', { description }); // shorthand for { description: value }
+      const res = await axios.post('https://mkim-decoded-intern-2025.onrender.com/extract', { userInput }); // shorthand for { description: value }
       
       if (res.status !== 200) {
         setShowError(true);
