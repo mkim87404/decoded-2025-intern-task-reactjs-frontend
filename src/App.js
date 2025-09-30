@@ -13,6 +13,8 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [showJsonModal, setShowJsonModal] = useState(false);
   const [showError, setShowError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('Please try again, the AI might be temporarily unavailable.');
+  const AXIOS_REQUEST_TIMEOUT = Number(process.env.REACT_APP_AXIOS_REQUEST_TIMEOUT) || 25000; // Use fallback timeout if no environment variable set
 
   // For tracking mock UI menu & Panel selections
   const [selectedRoleIndex, setSelectedRoleIndex] = useState(0);
@@ -22,7 +24,7 @@ function App() {
   const [formValues, setFormValues] = useState({});
   
   // For Google reCAPTCHA
-  const REACT_APP_GOOGLE_RECAPTCHA_SITE_KEY = process.env.REACT_APP_GOOGLE_RECAPTCHA_SITE_KEY;
+  const GOOGLE_RECAPTCHA_SITE_KEY = process.env.REACT_APP_GOOGLE_RECAPTCHA_SITE_KEY;
   const recaptchaRef = useRef();
   const [captchaVerified, setCaptchaVerified] = useState(false);
 
@@ -56,8 +58,12 @@ function App() {
     setDescription(userInput);  // Not actively used in the current version, but good to persist this data for future features
 
     try {
-      const res = await axios.post('https://mkim-decoded-intern-2025.onrender.com/extract', { description: userInput });
-      
+      const res = await axios.post(
+        'https://mkim-decoded-intern-2025.onrender.com/extract',
+        { description: userInput },
+        { timeout: AXIOS_REQUEST_TIMEOUT }
+      );
+
       if (res.status !== 200) {
         setShowError(true);
         return;
@@ -88,6 +94,13 @@ function App() {
       }); // This will kick off the dynamic rendering of the main mock ui component section
     } catch (err) {
       console.error('Error fetching AI response:', err);
+
+      if (err.code === 'ECONNABORTED') {
+        setErrorMessage('Request timed out. Please consider improving your app description.');
+      } else {
+        setErrorMessage('Please try again, the AI might be temporarily unavailable.');
+      }
+
       setShowError(true);
     } finally { // this will always run at the end, even before the "try" clause "return"s
       setIsLoading(false); // Hide loading wheel
@@ -129,7 +142,7 @@ function App() {
       <div style={{ marginBottom: '10px' }}>
         <ReCAPTCHA
           ref={recaptchaRef}
-          sitekey={REACT_APP_GOOGLE_RECAPTCHA_SITE_KEY}
+          sitekey={GOOGLE_RECAPTCHA_SITE_KEY}
           onChange={handleCaptchaChange}
         />
       </div>
@@ -144,7 +157,7 @@ function App() {
       </button>
       {showError && (
         <div style={{ color: 'red', marginTop: '10px' }}>
-          Please try again, the AI might be temporarily unavailable.
+          {errorMessage || 'Please try again, the AI might be temporarily unavailable.'}
         </div>
       )}
 
