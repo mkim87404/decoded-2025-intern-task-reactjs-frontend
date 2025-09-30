@@ -13,7 +13,7 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [showJsonModal, setShowJsonModal] = useState(false);
   const [showError, setShowError] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('Please try again, the AI might be temporarily unavailable.');
+  const [errorMessage, setErrorMessage] = useState('Please try again, the AI might be temporarily unavailable due to high load.');
   const AXIOS_REQUEST_TIMEOUT = Number(process.env.REACT_APP_AXIOS_REQUEST_TIMEOUT) || 25000; // Use fallback timeout if no environment variable set
 
   // For tracking mock UI menu & Panel selections
@@ -96,9 +96,9 @@ function App() {
       console.error('Error fetching AI response:', err);
 
       if (err.code === 'ECONNABORTED') {
-        setErrorMessage('Request timed out. Please consider improving your app description.');
+        setErrorMessage('The AI timed out while thinking. Please consider improving your app description.');
       } else {
-        setErrorMessage('Please try again, the AI might be temporarily unavailable.');
+        setErrorMessage('Please try again, the AI might be temporarily unavailable due to high load.');
       }
 
       setShowError(true);
@@ -157,7 +157,7 @@ function App() {
       </button>
       {showError && (
         <div style={{ color: 'red', marginTop: '10px' }}>
-          {errorMessage || 'Please try again, the AI might be temporarily unavailable.'}
+          {errorMessage || 'Please try again, the AI might be temporarily unavailable due to high load.'}
         </div>
       )}
 
