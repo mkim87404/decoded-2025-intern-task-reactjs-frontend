@@ -105,10 +105,12 @@ function App() {
   const handleEntityClick = (index) => {
     setSelectedEntityIndex(index);
   };
-  const getEntitiesForRole = (role) => {
+  const getEntitiesForRole = (role) => {  // Undefined check for React rendering quirks
+    if (!role || !Array.isArray(role.Features)) return [];
     return role.Features.map((f) => f.Entity);
   };
-  const getFeatureByEntity = (role, entity) => {
+  const getFeatureByEntity = (role, entity) => {  // Undefined check for React rendering quirks
+    if (!role || !Array.isArray(role.Features)) return null;
     return role.Features.find((f) => f.Entity === entity);
   };
   const getFieldKey = (role, entity, field) => `${role}|${entity}|${field}`;
@@ -206,7 +208,7 @@ function App() {
               <div style={{ minWidth: '150px', marginRight: '20px' }}>
                 <strong>Forms:</strong>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '10px' }}>
-                  {getEntitiesForRole(output.Roles[selectedRoleIndex]).map((entity, index) => (
+                  {output?.Roles?.[selectedRoleIndex] && getEntitiesForRole(output.Roles[selectedRoleIndex]).map((entity, index) => (
                     <button
                       key={index}
                       onClick={() => handleEntityClick(index)}
@@ -228,15 +230,16 @@ function App() {
               {/* Right form display */}
               <div style={{ flexGrow: 1 }}>
                 {(() => {
-                  const role = output.Roles[selectedRoleIndex];
-                  const entity = getEntitiesForRole(role)[selectedEntityIndex];
+                  const role = output?.Roles?.[selectedRoleIndex] && output.Roles[selectedRoleIndex];
+                  const entity = role && Array.isArray(role.Features) ? getEntitiesForRole(role)[selectedEntityIndex] || null : null;
                   const feature = getFeatureByEntity(role, entity);
+                  if (!feature) return null;
 
                   return (
                     <div>
                       <h3>{feature.Feature}</h3>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                        {feature['Input Fields'].map((field, i) => (
+                        {Array.isArray(feature['Input Fields']) && feature['Input Fields'].map((field, i) => (
                           <div key={i}>
                             <label>{field}</label>
                             {/* Tracked Input Fields with Unique Values */}
@@ -256,7 +259,7 @@ function App() {
                         ))}
                       </div>
                       <div style={{ marginTop: '20px', display: 'flex', gap: '10px' }}>
-                        {feature.Buttons.map((btn, i) => (
+                        {Array.isArray(feature.Buttons) && feature.Buttons.map((btn, i) => (
                           <button key={i} style={{ padding: '8px 12px' }}>{btn}</button>
                         ))}
                       </div>
