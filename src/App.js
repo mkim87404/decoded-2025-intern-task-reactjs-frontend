@@ -1,23 +1,34 @@
 import './App.css';
 import React, { useState, useRef } from 'react';
 import axios from 'axios';
+import ReCAPTCHA from 'react-google-recaptcha';
 
 function App() {
+  // App general assets
   const descriptionRef = useRef();
-  const [description, setDescription] = useState('');
+  const [description, setDescription] = useState(''); // Not actively used in the current version, but good to persist this data for future features
   const [isSubmitButtonDisabled, setIsSubmitButtonDisabled] = useState(false);
   const [output, setOutput] = useState(null);
   const [requirements, setRequirements] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showJsonModal, setShowJsonModal] = useState(false);
+  const [showError, setShowError] = useState(false);
 
+  // For tracking mock UI menu & Panel selections
   const [selectedRoleIndex, setSelectedRoleIndex] = useState(0);
   const [selectedEntityIndex, setSelectedEntityIndex] = useState(0);
 
+  // For tracking mock UI form input field values
   const [formValues, setFormValues] = useState({});
+  
+  // For Google reCAPTCHA
+  const REACT_APP_RECAPTCHA_SITE_KEY = process.env.REACT_APP_RECAPTCHA_SITE_KEY;
+  const recaptchaRef = useRef();
+  const [captchaVerified, setCaptchaVerified] = useState(false);
 
-  const [showError, setShowError] = useState(false);
+  const handleCaptchaChange = (value) => { setCaptchaVerified(!!value); };
 
+  // Submit button click handler
   const handleSubmit = async () => {
     // Capture the current text area input & and do minimal validation of acceptable user input for the app description
     const userInput = descriptionRef.current.value
@@ -26,7 +37,7 @@ function App() {
       return;
     }
 
-    // Disable the Submit button
+    // Disable the submit button
     setIsSubmitButtonDisabled(true);
 
     // Purge previous submit outputs - This is mainly to hide the main output components while loading
@@ -45,7 +56,7 @@ function App() {
     setDescription(userInput);  // Not actively used in the current version, but good to persist this data for future features
 
     try {
-      const res = await axios.post('https://mkim-decoded-intern-2025.onrender.com/extract', { description: userInput }); // or { description } which is shorthand for { description: value }, but careful because description update is asynchronous.
+      const res = await axios.post('https://mkim-decoded-intern-2025.onrender.com/extract', { description: userInput });
       
       if (res.status !== 200) {
         setShowError(true);
@@ -79,41 +90,30 @@ function App() {
       console.error('Error fetching AI response:', err);
       setShowError(true);
     } finally { // this will always run at the end, even before the "try" clause "return"s
-      setIsLoading(false); // Hide loading wheel  
-      setIsSubmitButtonDisabled(false);  // Enable the Submit button
+      setIsLoading(false); // Hide loading wheel
+      setCaptchaVerified(false);
+      recaptchaRef.current.reset(); // Reset the Google reCAPTCHA checkbox visually
+      setIsSubmitButtonDisabled(false);  // Submit button will be enabled when the reCAPTCHA is completed again
     }
   };
 
+  // Helper functions for the mock UI generation & panel selection state tracking
   const handleRoleClick = (index) => {
     setSelectedRoleIndex(index);
     setSelectedEntityIndex(0); // Reset entity selection on role change
   };
-
   const handleEntityClick = (index) => {
     setSelectedEntityIndex(index);
   };
-
   const getEntitiesForRole = (role) => {
     return role.Features.map((f) => f.Entity);
   };
-
   const getFeatureByEntity = (role, entity) => {
     return role.Features.find((f) => f.Entity === entity);
   };
-
   const getFieldKey = (role, entity, field) => `${role}|${entity}|${field}`;
 
-  // Simpler Display of JSON App Output from AI
-  // return (
-  //   <div>
-  //     <h1>Mini App Builder</h1>
-  //     <textarea onChange={e => setDescription(e.target.value)} />
-  //     <button onClick={handleSubmit}>Submit</button>
-  //     {output && <pre>{JSON.stringify(output, null, 2)}</pre>}
-  //   </div>
-  // );
-
-  // Dynamic Mock UI Generation for the App
+  // Dynamic mock UI generation for the app
   return (
     <div style={{ padding: '20px', fontFamily: 'Arial' }}>
       <h1>Mock App Builder</h1>
@@ -123,15 +123,15 @@ function App() {
         style={{ width: '100%', marginBottom: '10px' }}
         placeholder="Describe your app..."
       />
-      {/* Alternatively, update the description state on every keystroke
-      <textarea
-        ref={descriptionRef}
-        rows={4}
-        style={{ width: '100%', marginBottom: '10px' }}
-        onChange={(e) => setDescription(e.target.value)}
-        placeholder="Describe your app..."
-      /> */}
-      <button onClick={handleSubmit} disabled={isSubmitButtonDisabled} style={{
+      {/* Google reCAPTCHA */}
+      <div style={{ marginBottom: '10px' }}>
+        <ReCAPTCHA
+          ref={recaptchaRef}
+          sitekey={REACT_APP_RECAPTCHA_SITE_KEY}
+          onChange={handleCaptchaChange}
+        />
+      </div>
+      <button onClick={handleSubmit} disabled={isSubmitButtonDisabled || !captchaVerified} style={{
         backgroundColor: isSubmitButtonDisabled ? '#ccc' : '#007bff',
         color: '#fff',
         border: 'none',
@@ -146,7 +146,7 @@ function App() {
         </div>
       )}
 
-      {/* Output Loading Wheel */}
+      {/* Loading wheel */}
       {isLoading && (
         <div style={{ marginTop: '20px', textAlign: 'center' }}>
           <div className="spinner" />
@@ -154,13 +154,13 @@ function App() {
         </div>
       )}
 
-      {/* Main Outputs */}
+      {/* Main outputs */}
       {output && requirements && (
         <>
-          {/* Requirements Heading */}
+          {/* Requirements heading */}
           <h3 style={{ marginTop: '30px' }}>AI Captured Requirements:</h3>
 
-          {/* Requirements Summary Box */}
+          {/* Requirements summary box */}
           <div style={{ border: '1px solid #ccc', padding: '20px' }}>
             <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
               <button onClick={() => setShowJsonModal(true)} style={{ padding: '6px 12px' }}>
@@ -173,14 +173,14 @@ function App() {
             <p><strong>Features:</strong> {requirements.features.join(', ')}</p>
           </div>
 
-          {/* Generated UI Heading */}
+          {/* Generated UI heading */}
           <h3 style={{ marginTop: '30px' }}>Generated UI:</h3>
 
-          {/* UI Box */}
+          {/* UI box */}
           <div style={{ border: '1px solid #ccc', padding: '20px' }}>
             <h2>{requirements.appName}</h2>
 
-            {/* Top Menu Bar */}
+            {/* Top menu bar */}
             <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
               <strong>Menu:</strong>
               {output.Roles.map((role, index) => (
@@ -200,9 +200,9 @@ function App() {
               ))}
             </div>
 
-            {/* Forms Section */}
+            {/* Forms section */}
             <div style={{ display: 'flex' }}>
-              {/* Left Vertical Nav */}
+              {/* Left vertical nav */}
               <div style={{ minWidth: '150px', marginRight: '20px' }}>
                 <strong>Forms:</strong>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '10px' }}>
@@ -225,7 +225,7 @@ function App() {
                 </div>
               </div>
 
-              {/* Right Form Display */}
+              {/* Right form display */}
               <div style={{ flexGrow: 1 }}>
                 {(() => {
                   const role = output.Roles[selectedRoleIndex];
@@ -239,8 +239,6 @@ function App() {
                         {feature['Input Fields'].map((field, i) => (
                           <div key={i}>
                             <label>{field}</label>
-                            {/* Non-Tracked Input Fields Sharing Values */}
-                            {/* <input type="text" style={{ width: '100%', padding: '6px' }} /> */}
                             {/* Tracked Input Fields with Unique Values */}
                             <input
                               type="text"
@@ -271,17 +269,24 @@ function App() {
         </>
       )}
 
-      {/* Modal for JSON View */}
+      {/* Modal for JSON view of app requirements */}
       {showJsonModal && (
-        <div style={{
-          position: 'fixed',
-          top: 0, left: 0, right: 0, bottom: 0,
-          backgroundColor: 'rgba(0,0,0,0.5)',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          zIndex: 1000
-        }}>
+        <div 
+          style={{
+            position: 'fixed',
+            top: 0, left: 0, right: 0, bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 1000
+          }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowJsonModal(false);
+            }
+          }}
+        >
           <div style={{
             backgroundColor: '#fff',
             width: 'auto',  // content-driven width
