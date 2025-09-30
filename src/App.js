@@ -132,13 +132,13 @@ function App() {
         />
       </div>
       <button onClick={handleSubmit} disabled={isSubmitButtonDisabled || !captchaVerified} style={{
-        backgroundColor: isSubmitButtonDisabled ? '#ccc' : '#007bff',
+        backgroundColor: (isSubmitButtonDisabled || !captchaVerified) ? '#ccc' : '#007bff',
         color: '#fff',
         border: 'none',
         padding: '10px 16px',
-        cursor: isSubmitButtonDisabled ? 'not-allowed' : 'pointer'
+        cursor: (isSubmitButtonDisabled || !captchaVerified) ? 'not-allowed' : 'pointer'
       }}>
-        {isSubmitButtonDisabled ? 'Generating...' : 'Submit'}
+        Submit
       </button>
       {showError && (
         <div style={{ color: 'red', marginTop: '10px' }}>
