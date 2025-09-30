@@ -22,7 +22,7 @@ function App() {
   const [formValues, setFormValues] = useState({});
   
   // For Google reCAPTCHA
-  const REACT_APP_RECAPTCHA_SITE_KEY = process.env.REACT_APP_RECAPTCHA_SITE_KEY;
+  const REACT_GOOGLE_RECAPTCHA_SITE_KEY = process.env.REACT_GOOGLE_RECAPTCHA_SITE_KEY;
   const recaptchaRef = useRef();
   const [captchaVerified, setCaptchaVerified] = useState(false);
 
@@ -127,7 +127,7 @@ function App() {
       <div style={{ marginBottom: '10px' }}>
         <ReCAPTCHA
           ref={recaptchaRef}
-          sitekey={REACT_APP_RECAPTCHA_SITE_KEY}
+          sitekey={REACT_GOOGLE_RECAPTCHA_SITE_KEY}
           onChange={handleCaptchaChange}
         />
       </div>
