@@ -18,7 +18,7 @@ function App() {
 
   // For tracking mock UI menu & Panel selections
   const [selectedRoleIndex, setSelectedRoleIndex] = useState(0);
-  const [selectedEntityIndex, setSelectedEntityIndex] = useState(0);
+  const [selectedEntityIndex, setSelectedEntityIndex] = useState(0);  // Assume 1 to 1 cardinality pairing between Feature - Entity, hence the "EntityIndex" will be interchangeable with "FeatureIndex"
 
   // For tracking mock UI form input field values
   const [formValues, setFormValues] = useState({});
@@ -122,9 +122,9 @@ function App() {
     if (!role || !Array.isArray(role.Features)) return [];
     return role.Features.map((f) => f.Entity);
   };
-  const getFeatureByEntity = (role, entity) => {  // Undefined check for React rendering quirks
-    if (!role || !Array.isArray(role.Features)) return null;
-    return role.Features.find((f) => f.Entity === entity);
+  const getFeatureByRoleAndEntityIndex = (role, entityIndex) => {  // Undefined check for React rendering quirks
+    if (!role || !Array.isArray(role.Features) || role.Features.length < (entityIndex + 1)) return null;
+    return role.Features[entityIndex];
   };
   const getFieldKey = (role, entity, field) => `${role}|${entity}|${field}`;
 
@@ -221,7 +221,7 @@ function App() {
               <div style={{ minWidth: '150px', marginRight: '20px' }}>
                 <strong>Forms:</strong>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '10px' }}>
-                  {output?.Roles?.[selectedRoleIndex] && getEntitiesForRole(output.Roles[selectedRoleIndex]).map((entity, index) => (
+                  {output?.Roles?.[selectedRoleIndex]?.Features && output.Roles[selectedRoleIndex].Features.map((featureItem, index) => (
                     <button
                       key={index}
                       onClick={() => handleEntityClick(index)}
@@ -234,7 +234,7 @@ function App() {
                         textAlign: 'left',
                       }}
                     >
-                      {entity}
+                      {`${featureItem.Entity} (${featureItem.Feature})`}
                     </button>
                   ))}
                 </div>
@@ -245,7 +245,7 @@ function App() {
                 {(() => {
                   const role = output?.Roles?.[selectedRoleIndex] && output.Roles[selectedRoleIndex];
                   const entity = role && Array.isArray(role.Features) ? getEntitiesForRole(role)[selectedEntityIndex] || null : null;
-                  const feature = getFeatureByEntity(role, entity);
+                  const feature = getFeatureByRoleAndEntityIndex(role, selectedEntityIndex);
                   if (!feature) return null;
 
                   return (
