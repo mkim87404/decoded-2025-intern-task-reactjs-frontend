@@ -126,7 +126,7 @@ function App() {
     if (!role || !Array.isArray(role.Features) || role.Features.length < (entityIndex + 1)) return null;
     return role.Features[entityIndex];
   };
-  const getFieldKey = (role, entity, field) => `${role}|${entity}|${field}`;
+  const getFieldKey = (role, entity, feature, field) => `${role}|${entity}|${feature}|${field}`;
 
   // Dynamic mock UI generation for the app
   return (
@@ -259,9 +259,9 @@ function App() {
                             <input
                               type="text"
                               style={{ width: '100%', padding: '6px' }}
-                              value={formValues[getFieldKey(role.Role, entity, field)] || ''}
+                              value={formValues[getFieldKey(role.Role, entity, feature.Feature, field)] || ''}
                               onChange={(e) => {
-                                const key = getFieldKey(role.Role, entity, field);
+                                const key = getFieldKey(role.Role, entity, feature.Feature, field);
                                 setFormValues((prev) => ({
                                   ...prev,
                                   [key]: e.target.value
