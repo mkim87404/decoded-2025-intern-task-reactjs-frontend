@@ -20,9 +20,27 @@ function App() {
   const [selectedRoleIndex, setSelectedRoleIndex] = useState(0);
   const [selectedEntityIndex, setSelectedEntityIndex] = useState(0);  // Assume 1 to 1 cardinality pairing between Feature - Entity, hence the "EntityIndex" will be interchangeable with "FeatureIndex"
 
+  const handleRoleClick = (index) => {
+    setSelectedRoleIndex(index);
+    setSelectedEntityIndex(0); // Reset entity selection on role change
+  };
+  const handleEntityClick = (index) => {
+    setSelectedEntityIndex(index);
+  };
+  const getEntitiesForRole = (role) => {  // Undefined check for React rendering quirks
+    if (!role || !Array.isArray(role.Features)) return [];
+    return role.Features.map((f) => f.Entity);
+  };
+  const getFeatureByRoleAndEntityIndex = (role, entityIndex) => {  // Undefined check for React rendering quirks
+    if (!role || !Array.isArray(role.Features) || role.Features.length < (entityIndex + 1)) return null;
+    return role.Features[entityIndex];
+  };
+
   // For tracking mock UI form input field values
   const [formValues, setFormValues] = useState({});
-  
+
+  const getFieldKey = (role, entity, feature, field) => `${role}|${entity}|${feature}|${field}`;
+
   // For Google reCAPTCHA
   const GOOGLE_RECAPTCHA_SITE_KEY = process.env.REACT_APP_GOOGLE_RECAPTCHA_SITE_KEY;
   const recaptchaRef = useRef();
@@ -109,24 +127,6 @@ function App() {
       setIsSubmitButtonDisabled(false);  // Submit button will be enabled when the reCAPTCHA is completed again
     }
   };
-
-  // Helper functions for the mock UI generation & panel selection state tracking
-  const handleRoleClick = (index) => {
-    setSelectedRoleIndex(index);
-    setSelectedEntityIndex(0); // Reset entity selection on role change
-  };
-  const handleEntityClick = (index) => {
-    setSelectedEntityIndex(index);
-  };
-  const getEntitiesForRole = (role) => {  // Undefined check for React rendering quirks
-    if (!role || !Array.isArray(role.Features)) return [];
-    return role.Features.map((f) => f.Entity);
-  };
-  const getFeatureByRoleAndEntityIndex = (role, entityIndex) => {  // Undefined check for React rendering quirks
-    if (!role || !Array.isArray(role.Features) || role.Features.length < (entityIndex + 1)) return null;
-    return role.Features[entityIndex];
-  };
-  const getFieldKey = (role, entity, feature, field) => `${role}|${entity}|${feature}|${field}`;
 
   // Dynamic mock UI generation for the app
   return (
