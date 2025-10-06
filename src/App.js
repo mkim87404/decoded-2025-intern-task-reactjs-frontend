@@ -130,203 +130,195 @@ function App() {
 
   // Dynamic mock UI generation for the app
   return (
-    <div style={{ padding: '20px', fontFamily: 'Arial' }}>
-      <h1>Mock App Builder</h1>
-      <textarea
-        ref={descriptionRef}
-        rows={4}
-        style={{ width: '100%', marginBottom: '10px' }}
-        placeholder="Describe your app..."
-      />
-      {/* Google reCAPTCHA */}
-      <div style={{ marginBottom: '10px' }}>
-        <ReCAPTCHA
-          ref={recaptchaRef}
-          sitekey={GOOGLE_RECAPTCHA_SITE_KEY}
-          onChange={handleCaptchaChange}
+    <div className="min-h-screen bg-gray-50 py-8 px-4 font-sans">
+      <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-lg p-8">
+        <h1 className="text-3xl font-bold mb-6 text-gray-900">Mock App Builder</h1>
+        <textarea
+          ref={descriptionRef}
+          rows={4}
+          className="w-full mb-4 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+          placeholder="Describe your app..."
         />
-      </div>
-      <button onClick={handleSubmit} disabled={isSubmitButtonDisabled || !captchaVerified} style={{
-        backgroundColor: (isSubmitButtonDisabled || !captchaVerified) ? '#ccc' : '#007bff',
-        color: '#fff',
-        border: 'none',
-        padding: '10px 16px',
-        cursor: (isSubmitButtonDisabled || !captchaVerified) ? 'not-allowed' : 'pointer'
-      }}>
-        Submit
-      </button>
-      {showError && (
-        <div style={{ color: 'red', marginTop: '10px' }}>
-          {errorMessage || 'Please try again, the AI might be temporarily unavailable due to high load.'}
+        {/* Google reCAPTCHA */}
+        <div className="mb-4">
+          <ReCAPTCHA
+            ref={recaptchaRef}
+            sitekey={GOOGLE_RECAPTCHA_SITE_KEY}
+            onChange={handleCaptchaChange}
+          />
         </div>
-      )}
-
-      {/* Loading wheel */}
-      {isLoading && (
-        <div style={{ marginTop: '20px', textAlign: 'center' }}>
-          <div className="spinner" />
-          <p>Generating your app...</p>
-        </div>
-      )}
-
-      {/* Main outputs */}
-      {output && requirements && (
-        <>
-          {/* Requirements heading */}
-          <h3 style={{ marginTop: '30px' }}>AI Captured Requirements:</h3>
-
-          {/* Requirements summary box */}
-          <div style={{ border: '1px solid #ccc', padding: '20px' }}>
-            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-              <button onClick={() => setShowJsonModal(true)} style={{ padding: '6px 12px' }}>
-                View Requirements in JSON
-              </button>
-            </div>
-            <p><strong>App Name:</strong> {requirements.appName}</p>
-            <p><strong>Entities:</strong> {requirements.entities.join(', ')}</p>
-            <p><strong>Roles:</strong> {requirements.roles.join(', ')}</p>
-            <p><strong>Features:</strong> {requirements.features.join(', ')}</p>
+        <button
+          onClick={handleSubmit}
+          disabled={isSubmitButtonDisabled || !captchaVerified}
+          className={`w-full py-3 rounded-lg font-semibold transition text-white ${
+            isSubmitButtonDisabled || !captchaVerified
+              ? 'bg-gray-300 cursor-not-allowed'
+              : 'bg-blue-600 hover:bg-blue-700 cursor-pointer'
+          }`}
+        >
+          Submit
+        </button>
+        {showError && (
+          <div className="text-red-600 mt-4 text-center">
+            {errorMessage || 'Please try again, the AI might be temporarily unavailable due to high load.'}
           </div>
+        )}
 
-          {/* Generated UI heading */}
-          <h3 style={{ marginTop: '30px' }}>Generated UI:</h3>
+        {/* Loading wheel */}
+        {isLoading && (
+          <div className="mt-8 flex flex-col items-center">
+            <svg className="animate-spin h-8 w-8 text-blue-600 mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+            </svg>
+            <p className="text-gray-600">Generating your app...</p>
+          </div>
+        )}
 
-          {/* UI box */}
-          <div style={{ border: '1px solid #ccc', padding: '20px' }}>
-            <h2>{requirements.appName}</h2>
+        {/* Main outputs */}
+        {output && requirements && (
+          <>
+            {/* Requirements heading */}
+            <h3 className="mt-10 text-xl font-semibold text-gray-800">AI Captured Requirements:</h3>
 
-            {/* Top menu bar */}
-            <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
-              <strong>Menu:</strong>
-              {output.Roles.map((role, index) => (
+            {/* Requirements summary box */}
+            <div className="border border-gray-200 rounded-lg p-6 mt-2 bg-gray-50">
+              <div className="flex justify-end">
                 <button
-                  key={index}
-                  onClick={() => handleRoleClick(index)}
-                  style={{
-                    backgroundColor: index === selectedRoleIndex ? '#007bff' : '#f0f0f0',
-                    color: index === selectedRoleIndex ? '#fff' : '#000',
-                    border: 'none',
-                    padding: '8px 12px',
-                    cursor: 'pointer',
-                  }}
+                  onClick={() => setShowJsonModal(true)}
+                  className="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 text-sm font-medium"
                 >
-                  {role.Role}
+                  View Requirements in JSON
                 </button>
-              ))}
+              </div>
+              <p className="mt-2"><span className="font-semibold">App Name:</span> {requirements.appName}</p>
+              <p><span className="font-semibold">Entities:</span> {requirements.entities.join(', ')}</p>
+              <p><span className="font-semibold">Roles:</span> {requirements.roles.join(', ')}</p>
+              <p><span className="font-semibold">Features:</span> {requirements.features.join(', ')}</p>
             </div>
 
-            {/* Forms section */}
-            <div style={{ display: 'flex' }}>
-              {/* Left vertical nav */}
-              <div style={{ minWidth: '150px', marginRight: '20px' }}>
-                <strong>Forms:</strong>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '10px' }}>
-                  {output?.Roles?.[selectedRoleIndex]?.Features && output.Roles[selectedRoleIndex].Features.map((featureItem, index) => (
-                    <button
-                      key={index}
-                      onClick={() => handleEntityClick(index)}
-                      style={{
-                        backgroundColor: index === selectedEntityIndex ? '#28a745' : '#f0f0f0',
-                        color: index === selectedEntityIndex ? '#fff' : '#000',
-                        border: 'none',
-                        padding: '6px 10px',
-                        cursor: 'pointer',
-                        textAlign: 'left',
-                      }}
-                    >
-                      {`${featureItem.Entity} (${featureItem.Feature})`}
-                    </button>
-                  ))}
+            {/* Generated UI heading */}
+            <h3 className="mt-10 text-xl font-semibold text-gray-800">Generated UI:</h3>
+
+            {/* UI box */}
+            <div className="border border-gray-200 rounded-lg p-6 mt-2 bg-gray-50">
+              <h2 className="text-2xl font-bold mb-6 text-gray-900">{requirements.appName}</h2>
+
+              {/* Top menu bar */}
+              <div className="flex gap-2 mb-6 items-center">
+                <span className="font-semibold text-gray-700">Menu:</span>
+                {output.Roles.map((role, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleRoleClick(index)}
+                    className={`px-4 py-2 rounded-lg font-medium transition border ${
+                      index === selectedRoleIndex
+                        ? 'bg-blue-600 text-white border-blue-600 shadow'
+                        : 'bg-white text-gray-800 border-gray-300 hover:bg-blue-50'
+                    }`}
+                  >
+                    {role.Role}
+                  </button>
+                ))}
+              </div>
+
+              {/* Forms section */}
+              <div className="flex flex-col md:flex-row gap-6">
+                {/* Left vertical nav */}
+                <div className="min-w-[150px] md:mr-6">
+                  <span className="font-semibold text-gray-700">Forms:</span>
+                  <div className="flex flex-col gap-2 mt-3">
+                    {output?.Roles?.[selectedRoleIndex]?.Features && output.Roles[selectedRoleIndex].Features.map((featureItem, index) => (
+                      <button
+                        key={index}
+                        onClick={() => handleEntityClick(index)}
+                        className={`px-3 py-2 rounded-lg text-left font-medium transition border ${
+                          index === selectedEntityIndex
+                            ? 'bg-green-600 text-white border-green-600 shadow'
+                            : 'bg-white text-gray-800 border-gray-300 hover:bg-green-50'
+                        }`}
+                      >
+                        {`${featureItem.Entity} (${featureItem.Feature})`}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Right form display */}
+                <div className="flex-1">
+                  {(() => {
+                    const role = output?.Roles?.[selectedRoleIndex] && output.Roles[selectedRoleIndex];
+                    const entity = role && Array.isArray(role.Features) ? getEntitiesForRole(role)[selectedEntityIndex] || null : null;
+                    const feature = getFeatureByRoleAndEntityIndex(role, selectedEntityIndex);
+                    if (!feature) return null;
+
+                    return (
+                      <div>
+                        <h3 className="text-lg font-semibold mb-4">{feature.Feature}</h3>
+                        <div className="flex flex-col gap-4">
+                          {Array.isArray(feature['Input Fields']) && feature['Input Fields'].map((field, i) => (
+                            <div key={i}>
+                              <label className="block mb-1 font-medium text-gray-700">{field}</label>
+                              {/* Tracked Input Fields with Unique Values */}
+                              <input
+                                type="text"
+                                className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                                value={formValues[getFieldKey(role.Role, entity, feature.Feature, field)] || ''}
+                                onChange={(e) => {
+                                  const key = getFieldKey(role.Role, entity, feature.Feature, field);
+                                  setFormValues((prev) => ({
+                                    ...prev,
+                                    [key]: e.target.value
+                                  }));
+                                }}
+                              />
+                            </div>
+                          ))}
+                        </div>
+                        <div className="mt-6 flex gap-3">
+                          {Array.isArray(feature.Buttons) && feature.Buttons.map((btn, i) => (
+                            <button
+                              key={i}
+                              className="px-4 py-2 rounded-lg bg-blue-600 text-white font-semibold shadow hover:bg-blue-700 transition"
+                            >
+                              {btn}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
               </div>
+            </div>
+          </>
+        )}
 
-              {/* Right form display */}
-              <div style={{ flexGrow: 1 }}>
-                {(() => {
-                  const role = output?.Roles?.[selectedRoleIndex] && output.Roles[selectedRoleIndex];
-                  const entity = role && Array.isArray(role.Features) ? getEntitiesForRole(role)[selectedEntityIndex] || null : null;
-                  const feature = getFeatureByRoleAndEntityIndex(role, selectedEntityIndex);
-                  if (!feature) return null;
-
-                  return (
-                    <div>
-                      <h3>{feature.Feature}</h3>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                        {Array.isArray(feature['Input Fields']) && feature['Input Fields'].map((field, i) => (
-                          <div key={i}>
-                            <label>{field}</label>
-                            {/* Tracked Input Fields with Unique Values */}
-                            <input
-                              type="text"
-                              style={{ width: '100%', padding: '6px' }}
-                              value={formValues[getFieldKey(role.Role, entity, feature.Feature, field)] || ''}
-                              onChange={(e) => {
-                                const key = getFieldKey(role.Role, entity, feature.Feature, field);
-                                setFormValues((prev) => ({
-                                  ...prev,
-                                  [key]: e.target.value
-                                }));
-                              }}
-                            />
-                          </div>
-                        ))}
-                      </div>
-                      <div style={{ marginTop: '20px', display: 'flex', gap: '10px' }}>
-                        {Array.isArray(feature.Buttons) && feature.Buttons.map((btn, i) => (
-                          <button key={i} style={{ padding: '8px 12px' }}>{btn}</button>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                })()}
-              </div>
+        {/* Modal for JSON view of app requirements */}
+        {showJsonModal && (
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                setShowJsonModal(false);
+              }
+            }}
+          >
+            <div className="bg-white w-auto max-w-[80vw] max-h-[80vh] overflow-y-auto rounded-xl shadow-xl p-6">
+              <h3 className="text-lg font-semibold mb-2">Requirements JSON</h3>
+              <pre className="whitespace-pre overflow-x-auto font-mono text-sm bg-gray-100 p-4 rounded-lg">
+                {JSON.stringify(output, null, 2)}
+              </pre>
+              <button
+                onClick={() => setShowJsonModal(false)}
+                className="mt-4 px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 font-medium"
+              >
+                Close
+              </button>
             </div>
           </div>
-        </>
-      )}
-
-      {/* Modal for JSON view of app requirements */}
-      {showJsonModal && (
-        <div 
-          style={{
-            position: 'fixed',
-            top: 0, left: 0, right: 0, bottom: 0,
-            backgroundColor: 'rgba(0,0,0,0.5)',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            zIndex: 1000
-          }}
-          onClick={(e) => {
-            if (e.target === e.currentTarget) {
-              setShowJsonModal(false);
-            }
-          }}
-        >
-          <div style={{
-            backgroundColor: '#fff',
-            width: 'auto',  // content-driven width
-            maxWidth: '80%',  // prevents overflow
-            maxHeight: '80%',
-            overflowY: 'auto',
-            borderRadius: '8px',
-            boxShadow: '0 0 10px rgba(0,0,0,0.3)'
-          }}>
-            <h3>Requirements JSON</h3>
-            <pre style={{
-              whiteSpace: 'pre',         // preserves line breaks, disables wrapping
-              overflowX: 'auto',         // enables horizontal scroll
-              fontFamily: 'monospace',   // consistent character spacing
-              fontSize: '14px',          // optional: adjust for readability
-            }}>
-              {JSON.stringify(output, null, 2)}
-            </pre>
-            <button onClick={() => setShowJsonModal(false)} style={{ marginTop: '10px' }}>
-              Close
-            </button>
-          </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
