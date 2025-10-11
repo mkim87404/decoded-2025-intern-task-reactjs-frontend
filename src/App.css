@@ -47,7 +47,67 @@
   margin: auto;
 }
 
-@keyframes spin {
+/* Swinging Gradient Background */
+
+/* @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+.animated-gradient {
+  background: linear-gradient(-45deg, #6366f1, #8b5cf6, #ec4899, #10b981);
+  background-size: 400% 400%;
+  animation: gradientShift 15s ease infinite;
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+} */
+
+/* Flowing Gradient Background */
+
+.gradient-wrapper {
+  position: relative;
+  overflow: hidden;
+}
+
+.gradient-wrapper::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(to bottom right, #6366f1, #8b5cf6, #ec4899);
+  animation: hueShift 20s linear infinite;
+}
+
+@keyframes hueShift {
+  0% {
+    filter: hue-rotate(0deg);
+  }
+  100% {
+    filter: hue-rotate(360deg);
+  }
+}
+
+/* Colorful Counter-BG Hue & Bounce Animation - for App Heading Icon */
+
+@keyframes counterHueShift {
+  0% {
+    filter: hue-rotate(180deg);
+  }
+  100% {
+    filter: hue-rotate(540deg);
+  }
+}
+
+.counter-hue-bounce {
+  animation: counterHueShift 20s linear infinite, bounce 1s infinite;
 }
