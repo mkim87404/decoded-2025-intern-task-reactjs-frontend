@@ -16,7 +16,10 @@ function App() {
   const [showJsonModal, setShowJsonModal] = useState(false);
   const [showError, setShowError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+
+  // HTTP REST request configurations
   const AXIOS_REQUEST_TIMEOUT = Number(process.env.REACT_APP_AXIOS_REQUEST_TIMEOUT) || 25000; // Use fallback timeout if no environment variable set
+  const BACKEND_WEBSERVICE_RESOURCE_URL = process.env.REACT_APP_BACKEND_WEBSERVICE_RESOURCE_URL;
 
   // For Google reCAPTCHA
   const GOOGLE_RECAPTCHA_SITE_KEY = process.env.REACT_APP_GOOGLE_RECAPTCHA_SITE_KEY;
@@ -55,8 +58,9 @@ function App() {
     setDescription(userInput);  // Not actively used in the current version, but good to persist this data for future features
 
     try {
+      // Send the app description to the backend and wait for the AI response
       const res = await axios.post(
-        'https://mkim-decoded-intern-2025.onrender.com/extract',
+        BACKEND_WEBSERVICE_RESOURCE_URL,
         { description: userInput },
         { timeout: AXIOS_REQUEST_TIMEOUT }
       );
