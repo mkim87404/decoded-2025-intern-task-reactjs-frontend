@@ -24,17 +24,24 @@ function App() {
   // For Google reCAPTCHA
   const GOOGLE_RECAPTCHA_SITE_KEY = process.env.REACT_APP_GOOGLE_RECAPTCHA_SITE_KEY;
   const recaptchaRef = useRef(null);
-  const [captchaVerified, setCaptchaVerified] = useState(false);
+  const [captchaResult, setCaptchaResult] = useState(null);
 
-  const handleCaptchaChange = (value) => { setCaptchaVerified(!!value); };
+  const handleCaptchaChange = (result) => { setCaptchaResult(result); };
 
   // Build button click handler
   const handleBuild = async () => {
-    // Capture the current text area input & and do minimal validation of acceptable user input for the app description
-    const userInput = descriptionRef.current.value
+    // Capture the current text area input & and CAPTCHA result
+    const userInput = descriptionRef.current?.value;
+    const captchaValue = captchaResult;
+
+    // Do minimal validation of acceptable user input
     if (typeof userInput !== 'string' || userInput.trim() === '') {
       // alert('Please enter a valid description.');  // Old alert design, but functional
       setErrorMessage('Please enter a valid description.');
+      setShowError(true);
+      return;
+    } else if (!captchaValue) {
+      setErrorMessage('Please try again, the reCAPTCHA expired.');
       setShowError(true);
       return;
     }
@@ -61,7 +68,10 @@ function App() {
       // Send the app description to the backend and wait for the AI response
       const res = await axios.post(
         BACKEND_WEBSERVICE_RESOURCE_URL,
-        { description: userInput },
+        { 
+          description: userInput,
+          recaptcha: captchaValue
+        },
         { timeout: AXIOS_REQUEST_TIMEOUT }
       );
 
@@ -106,8 +116,8 @@ function App() {
       setShowError(true);
     } finally { // this will always run at the end, even before the "try" clause "return"s
       setIsLoading(false); // Hide loading wheel
-      setCaptchaVerified(false);
-      recaptchaRef.current.reset(); // Reset the Google reCAPTCHA checkbox visually
+      setCaptchaResult(null);  // Clear the stored captcha result
+      recaptchaRef.current?.reset(); // Reset the Google reCAPTCHA checkbox visually
       setIsBuildButtonDisabled(false);  // Build button will be enabled when the reCAPTCHA is completed again
     }
   };
@@ -237,14 +247,16 @@ function App() {
               <ReCAPTCHA
                 ref={recaptchaRef}
                 sitekey={GOOGLE_RECAPTCHA_SITE_KEY}
-                onChange={handleCaptchaChange}
+                onChange={handleCaptchaChange}  // This triggers when CAPTCHA passes (either silently or through challenge success) or when it expires
+                                                // When CAPTCHA passes, the handler receives a token string, and when it expires, the handler receives null
               />
             </div>
+            {/* Build Button */}
             <button
               onClick={handleBuild}
-              disabled={isBuildButtonDisabled || !captchaVerified}
+              disabled={isBuildButtonDisabled || !captchaResult}
               className={`w-full py-3 rounded-xl font-bold text-lg transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-fuchsia-400/50 dark:focus:ring-cyan-400/50 group relative overflow-hidden animate-in fade-in ${
-                isBuildButtonDisabled || !captchaVerified
+                isBuildButtonDisabled || !captchaResult
                   ? 'bg-gradient-to-r from-gray-300 to-gray-400 cursor-not-allowed text-gray-500'
                   : 'bg-gradient-to-r from-fuchsia-500 via-cyan-400 to-lime-400 hover:from-cyan-400 hover:to-fuchsia-500 text-white shadow-xl hover:scale-105 hover:shadow-2xl active:scale-95'
               }`}
@@ -253,11 +265,12 @@ function App() {
                 Build
               </span>
               <span className={`absolute left-0 top-0 w-full h-full transition-opacity duration-300 ${
-                isBuildButtonDisabled || !captchaVerified
+                isBuildButtonDisabled || !captchaResult
                   ? 'opacity-0'
                   : 'opacity-0 group-hover:opacity-100 bg-white/10'
               }`}></span>
             </button>
+            {/* Error Message */}
             {showError && (
               <div className="text-red-600 dark:text-red-400 mt-4 font-semibold text-center animate-shake animate-fade-in animate-in fade-in">
                 {errorMessage || 'Please try again, the AI might be temporarily unavailable due to high load.'}
