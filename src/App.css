@@ -47,14 +47,14 @@
   margin: auto;
 }
 
-/* Swinging Gradient Background */
-
-/* @keyframes spin {
+@keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
 
-.animated-gradient {
+/* Swinging Gradient Background */
+
+/* .animated-gradient {
   background: linear-gradient(-45deg, #6366f1, #8b5cf6, #ec4899, #10b981);
   background-size: 400% 400%;
   animation: gradientShift 15s ease infinite;
@@ -72,7 +72,7 @@
   }
 } */
 
-/* Flowing Gradient Background */
+/* Flowing Gradient Background - Light Mode */
 
 .gradient-wrapper {
   position: relative;
@@ -110,4 +110,20 @@
 
 .counter-hue-bounce {
   animation: counterHueShift 20s linear infinite, bounce 1s infinite;
+}
+
+/* Flowing Gradient Background - Dark Mode */
+
+html.dark .gradient-wrapper::before {
+  background: linear-gradient(to bottom right, #312e81, #4c1d95, #831843); /* darker tones */
+  animation: hueShiftDark 20s linear infinite;
+}
+
+@keyframes hueShiftDark {
+  0% {
+    filter: hue-rotate(0deg) brightness(0.7);
+  }
+  100% {
+    filter: hue-rotate(360deg) brightness(0.7);
+  }
 }

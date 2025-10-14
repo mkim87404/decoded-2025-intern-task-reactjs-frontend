@@ -6,7 +6,7 @@ import ReCAPTCHA from 'react-google-recaptcha';
 import { WrenchScrewdriverIcon, SparklesIcon, ArrowPathIcon, CheckCircleIcon, ArrowUpIcon } from '@heroicons/react/24/solid';
 
 function App() {
-  // App general assets
+  // App general state & ref assets
   const descriptionRef = useRef(null);
   const [description, setDescription] = useState(''); // Not actively used in the current version, but good to persist this data for future features
   const [isBuildButtonDisabled, setIsBuildButtonDisabled] = useState(false);
@@ -21,14 +21,39 @@ function App() {
   const AXIOS_REQUEST_TIMEOUT = Number(process.env.REACT_APP_AXIOS_REQUEST_TIMEOUT) || 25000; // Use fallback timeout if no environment variable set
   const BACKEND_WEBSERVICE_RESOURCE_URL = process.env.REACT_APP_BACKEND_WEBSERVICE_RESOURCE_URL;
 
-  // For Google reCAPTCHA
+  // Google reCAPTCHA (assets & helper functions)
   const GOOGLE_RECAPTCHA_SITE_KEY = process.env.REACT_APP_GOOGLE_RECAPTCHA_SITE_KEY;
   const recaptchaRef = useRef(null);
   const [captchaResult, setCaptchaResult] = useState(null);
 
   const handleCaptchaChange = (result) => { setCaptchaResult(result); };
 
-  // Build button click handler
+  // Mock UI menu & panel selection tracking (assets & helper functions)
+  const [selectedRoleIndex, setSelectedRoleIndex] = useState(0);
+  const [selectedEntityIndex, setSelectedEntityIndex] = useState(0);  // Assume 1 to 1 cardinality pairing between Feature - Entity, hence the "EntityIndex" will be interchangeable with "FeatureIndex"
+
+  const handleRoleClick = (index) => {
+    setSelectedRoleIndex(index);
+    setSelectedEntityIndex(0); // Reset entity selection on role change
+  };
+  const handleEntityClick = (index) => {
+    setSelectedEntityIndex(index);
+  };
+  const getEntitiesForRole = (role) => {  // Undefined check for React rendering quirks
+    if (!role || !Array.isArray(role.Features)) return [];
+    return role.Features.map((f) => f.Entity);
+  };
+  const getFeatureByRoleAndEntityIndex = (role, entityIndex) => {  // Undefined check for React rendering quirks
+    if (!role || !Array.isArray(role.Features) || role.Features.length < (entityIndex + 1)) return null;
+    return role.Features[entityIndex];
+  };
+
+  // Mock UI form input field values tracking (assets & helper functions)
+  const [formValues, setFormValues] = useState({});
+
+  const getFieldKey = (role, entity, feature, field) => `${role}|${entity}|${feature}|${field}`;
+
+  // Build button click event handler
   const handleBuild = async () => {
     // Capture the current text area input & and CAPTCHA result
     const userInput = descriptionRef.current?.value;
@@ -122,6 +147,45 @@ function App() {
     }
   };
 
+  // Dark mode detection & html tag class modification for custom CSS dark mode support
+  // "dark:" class prefix in JSX only works for Tailwind CSS classes, not for custom CSS.
+  // For custom CSS, need to toggle the "dark" class on the html tag and use "html.dark " as the CSS selector in the CSS file.
+  useLayoutEffect(() => {
+    const darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+    const applyThemeClassToHTMLTag = (e) => {
+      if (e.matches) {  // If dark mode is preferred
+        document.documentElement.classList.add('dark');
+      } else {  // If light mode is preferred
+        document.documentElement.classList.remove('dark');
+      }
+    };
+
+    darkModeMediaQuery.addEventListener('change', applyThemeClassToHTMLTag);
+    applyThemeClassToHTMLTag(darkModeMediaQuery); // Initial check
+
+    // Cleanup function to remove the event listener on component unmount (where 'component' means the entire App here)
+    return () => darkModeMediaQuery.removeEventListener('change', applyThemeClassToHTMLTag);
+  }, []); // Empty dependency array means this effect runs once on mount and cleans up on unmount
+
+  // Dynamically display the "Back to Top" button
+  const [showBackToTop, setShowBackToTop] = useState(false);
+
+  useLayoutEffect(() => {
+    const handleScroll = () => {
+      if (descriptionRef.current) {
+        const pageIsScrollable = document.body.scrollHeight > window.innerHeight;
+        const distanceFromTopOfViewportToTopOfDescriptionBox = descriptionRef.current.getBoundingClientRect().top;
+        setShowBackToTop(pageIsScrollable && distanceFromTopOfViewportToTopOfDescriptionBox < 0); // Show 'Back to Top' button if user has scrolled past the description box
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    handleScroll(); // Initial check in case the user is already scrolled down when the component mounts. This check is what caused the migration from "useEffect" to "useLayoutEffect"
+
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   // Auto-scrolling to the main output after DOM mutations finish (and before the browser paints) with "useLayoutEffect", to ensure correct calculation.
   const mainOutputRef = useRef(null);
 
@@ -140,25 +204,6 @@ function App() {
       // Don't need to register any cleanup function here, as the only thing that changes from this effect is the scroll position
     }
   }, [requirements]); // "requirements" is the main state that signals the rendering of the main output components
-
-  // Dynamically display the "Back to Top" button
-  const [showBackToTop, setShowBackToTop] = useState(false);
-
-  useLayoutEffect(() => {
-    const handleScroll = () => {
-      if (descriptionRef.current) {
-        const pageIsScrollable = document.body.scrollHeight > window.innerHeight;
-        const distanceFromTopOfViewportToTopOfDescriptionBox = descriptionRef.current.getBoundingClientRect().top;
-        setShowBackToTop(pageIsScrollable && distanceFromTopOfViewportToTopOfDescriptionBox < 0); // Show 'Back to Top' button if user has scrolled past the description box
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    handleScroll(); // Initial check in case the user is already scrolled down when the component mounts. This check is what caused the migration from "useEffect" to "useLayoutEffect"
-
-    // Cleanup function to remove the event listener on component unmount (where 'component' means the entire App here)
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []); // Empty dependency array means this effect runs once on mount and cleans up on unmount
 
   // Modal scroll focus (i.e. disable background scroll) & closing mechanism
   const modalRef = useRef(null);
@@ -186,32 +231,7 @@ function App() {
     }
   }, [showJsonModal]);
 
-  // For tracking mock UI menu & Panel selections
-  const [selectedRoleIndex, setSelectedRoleIndex] = useState(0);
-  const [selectedEntityIndex, setSelectedEntityIndex] = useState(0);  // Assume 1 to 1 cardinality pairing between Feature - Entity, hence the "EntityIndex" will be interchangeable with "FeatureIndex"
-
-  const handleRoleClick = (index) => {
-    setSelectedRoleIndex(index);
-    setSelectedEntityIndex(0); // Reset entity selection on role change
-  };
-  const handleEntityClick = (index) => {
-    setSelectedEntityIndex(index);
-  };
-  const getEntitiesForRole = (role) => {  // Undefined check for React rendering quirks
-    if (!role || !Array.isArray(role.Features)) return [];
-    return role.Features.map((f) => f.Entity);
-  };
-  const getFeatureByRoleAndEntityIndex = (role, entityIndex) => {  // Undefined check for React rendering quirks
-    if (!role || !Array.isArray(role.Features) || role.Features.length < (entityIndex + 1)) return null;
-    return role.Features[entityIndex];
-  };
-
-  // For tracking mock UI form input field values
-  const [formValues, setFormValues] = useState({});
-
-  const getFieldKey = (role, entity, feature, field) => `${role}|${entity}|${feature}|${field}`;
-
-  // Dynamic mock UI generation for the app
+  // Dynamic mock app UI generation JSX
   return (
       // 1. Static Gradient Background
       // <div className="min-h-screen bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-8 px-4 font-sans transition-colors duration-700 animate-fade-in animate-in fade-in">
@@ -257,8 +277,8 @@ function App() {
               disabled={isBuildButtonDisabled || !captchaResult}
               className={`w-full py-3 rounded-xl font-bold text-lg transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-fuchsia-400/50 dark:focus:ring-cyan-400/50 group relative overflow-hidden animate-in fade-in ${
                 isBuildButtonDisabled || !captchaResult
-                  ? 'bg-gradient-to-r from-gray-300 to-gray-400 cursor-not-allowed text-gray-500'
-                  : 'bg-gradient-to-r from-fuchsia-500 via-cyan-400 to-lime-400 hover:from-cyan-400 hover:to-fuchsia-500 text-white shadow-xl hover:scale-105 hover:shadow-2xl active:scale-95'
+                  ? 'cursor-not-allowed bg-gradient-to-r from-gray-300 to-gray-400 text-gray-500 dark:from-gray-600 dark:to-gray-700 dark:text-gray-300'
+                  : 'bg-gradient-to-r from-fuchsia-500 via-cyan-400 to-lime-400 hover:from-cyan-400 hover:to-fuchsia-500 dark:from-purple-700 dark:via-cyan-600 dark:to-lime-600 dark:hover:from-cyan-600 dark:hover:to-purple-700 text-white shadow-xl hover:scale-105 hover:shadow-2xl active:scale-95'
               }`}
             >
               <span className="relative z-10 animate-fade-in flex justify-center items-center">
@@ -326,7 +346,7 @@ function App() {
                   {/* Top menu bar */}
                   <div className="flex gap-2 mb-6 items-center animate-fade-in animate-in fade-in">
                     <span className="font-semibold text-gray-700 dark:text-gray-200 animate-fade-in animate-in fade-in">Menu:</span>
-                    {output.Roles.map((role, index) => (
+                    {output?.Roles && output.Roles.map((role, index) => (
                       <button
                         key={index}
                         onClick={() => handleRoleClick(index)}
@@ -426,9 +446,9 @@ function App() {
             {/* Modal for JSON view of app requirements */}
             {showJsonModal && createPortal(
               <div className="fixed inset-0 bg-black/60 dark:bg-black/80 flex justify-center items-center z-50 animate-fade-in animate-in fade-in">
-                <div ref={modalRef} className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white/90 dark:bg-gray-900/90 w-auto max-w-[80vw] max-h-[80vh] overflow-y-auto rounded-2xl shadow-2xl p-8 border-2 border-gradient-to-r from-fuchsia-400 via-cyan-400 to-lime-400 dark:from-cyan-500 dark:via-fuchsia-500 dark:to-lime-500 animate-fade-in-slow animate-in fade-in">
+                <div ref={modalRef} className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gray-100/90 dark:bg-gray-900/90 w-auto max-w-[80vw] max-h-[80vh] overflow-y-auto rounded-2xl shadow-2xl p-8 border-2 border-gradient-to-r from-fuchsia-400 via-cyan-400 to-lime-400 dark:from-cyan-500 dark:via-fuchsia-500 dark:to-lime-500 animate-fade-in-slow animate-in fade-in">
                   <h3 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">App Requirements JSON</h3>
-                  <pre className="whitespace-pre overflow-x-auto font-mono text-base bg-gray-100 dark:bg-gray-800 p-4 rounded-xl text-gray-800 dark:text-gray-200">
+                  <pre className="whitespace-pre overflow-x-auto font-mono text-base bg-white dark:bg-gray-800 p-4 rounded-xl text-gray-800 dark:text-gray-200">
                     {JSON.stringify(output, null, 2)}
                   </pre>
                   <button
