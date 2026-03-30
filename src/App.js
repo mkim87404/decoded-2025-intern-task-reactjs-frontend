@@ -21,7 +21,7 @@ function App() {
   const [errorMessage, setErrorMessage] = useState('');
 
   // HTTP REST request configurations
-  const AXIOS_REQUEST_TIMEOUT = Number(process.env.REACT_APP_AXIOS_REQUEST_TIMEOUT) || 60000; // Use fallback timeout if no environment variable set
+  const AXIOS_REQUEST_TIMEOUT = Number(process.env.REACT_APP_AXIOS_REQUEST_TIMEOUT) || 120000; // Use fallback timeout if no environment variable set
   const BACKEND_WEBSERVICE_RESOURCE_URL = isProd ? process.env.REACT_APP_BACKEND_WEBSERVICE_RESOURCE_URL : process.env.REACT_APP_BACKEND_WEBSERVICE_RESOURCE_URL_DEV;
 
   // Google reCAPTCHA (assets & helper functions)
