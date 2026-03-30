@@ -304,7 +304,7 @@ function App() {
             {isLoading && (
               <div className="mt-8 flex flex-col items-center animate-fade-in">
                 <ArrowPathIcon className="h-10 w-10 text-fuchsia-500 mb-2 drop-shadow-lg animate-spin" />
-                <p className="text-gray-700 dark:text-gray-200 font-medium">Generating your app... this may take a while depending on AI availability</p>
+                <p className="text-gray-700 dark:text-gray-200 font-medium">Generating your app.. this may take a while depending on AI availability</p>
               </div>
             )}
 
