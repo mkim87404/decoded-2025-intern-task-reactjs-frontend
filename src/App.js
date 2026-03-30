@@ -5,6 +5,9 @@ import axios from 'axios';
 import ReCAPTCHA from 'react-google-recaptcha';
 import { WrenchScrewdriverIcon, SparklesIcon, ArrowPathIcon, CheckCircleIcon, ArrowUpIcon } from '@heroicons/react/24/solid';
 
+// Conditionally load environment variables (don't need dotenv package on Render production or for Create-React-App Projects)
+const isProd = process.env.NODE_ENV === 'production';
+
 function App() {
   // App general state & ref assets
   const descriptionRef = useRef(null);
@@ -18,8 +21,8 @@ function App() {
   const [errorMessage, setErrorMessage] = useState('');
 
   // HTTP REST request configurations
-  const AXIOS_REQUEST_TIMEOUT = Number(process.env.REACT_APP_AXIOS_REQUEST_TIMEOUT) || 25000; // Use fallback timeout if no environment variable set
-  const BACKEND_WEBSERVICE_RESOURCE_URL = process.env.REACT_APP_BACKEND_WEBSERVICE_RESOURCE_URL;
+  const AXIOS_REQUEST_TIMEOUT = Number(process.env.REACT_APP_AXIOS_REQUEST_TIMEOUT) || 60000; // Use fallback timeout if no environment variable set
+  const BACKEND_WEBSERVICE_RESOURCE_URL = isProd ? process.env.REACT_APP_BACKEND_WEBSERVICE_RESOURCE_URL : process.env.REACT_APP_BACKEND_WEBSERVICE_RESOURCE_URL_DEV;
 
   // Google reCAPTCHA (assets & helper functions)
   const GOOGLE_RECAPTCHA_SITE_KEY = process.env.REACT_APP_GOOGLE_RECAPTCHA_SITE_KEY;
@@ -301,7 +304,7 @@ function App() {
             {isLoading && (
               <div className="mt-8 flex flex-col items-center animate-fade-in">
                 <ArrowPathIcon className="h-10 w-10 text-fuchsia-500 mb-2 drop-shadow-lg animate-spin" />
-                <p className="text-gray-700 dark:text-gray-200 font-medium">Generating your app...</p>
+                <p className="text-gray-700 dark:text-gray-200 font-medium">Generating your app... this may take a while depending on AI availability</p>
               </div>
             )}
 
